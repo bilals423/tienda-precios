@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>IMEI Precios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--white:#ffffff;--off:#f5f7fb;--off2:#eaecf4;--blue:#1a6bff;--blue-light:#e8f0ff;--blue-glow:rgba(26,107,255,0.14);--blue-deep:#0f4fcc;--text:#0d0f1a;--text2:#4a4f6a;--text3:#9299b8;--border:#e2e5f0;--border2:#d0d5e8;--red:#ff3b5c;--green:#00c07a;--shadow-sm:0 1px 3px rgba(13,15,26,0.06),0 2px 8px rgba(13,15,26,0.03);--shadow-blue:0 4px 20px rgba(26,107,255,0.2);}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{background:var(--off);}
+body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);min-height:100vh;max-width:480px;margin:0 auto;}
+.header{background:var(--white);border-bottom:1px solid var(--border);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.header-brand{display:flex;align-items:center;gap:10px;}
+.header-icon{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-blue);}
+.header-icon svg{width:16px;height:16px;stroke:white;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.header h1{font-size:17px;font-weight:700;letter-spacing:-0.3px;}
+.header h1 span{color:var(--blue);}
+.badge{background:var(--blue-light);color:var(--blue);font-family:'DM Mono',monospace;font-size:10px;padding:4px 10px;border-radius:20px;font-weight:500;}
+.tabs{display:flex;background:var(--white);border-bottom:1px solid var(--border);padding:0 6px;}
+.tab{flex:1;padding:12px 4px 10px;text-align:center;cursor:pointer;font-size:11px;font-weight:600;color:var(--text3);border-bottom:2px solid transparent;transition:color 0.2s,border-color 0.2s;user-select:none;display:flex;align-items:center;justify-content:center;gap:5px;}
+.tab svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+.panel{display:none;padding:16px;}
+.panel.active{display:block;}
+input,select{background:var(--off);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s,box-shadow 0.2s,background 0.2s;width:100%;-webkit-appearance:none;}
+input:focus,select:focus{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 3px var(--blue-glow);}
+input::placeholder{color:var(--text3);}
+.btn{background:var(--blue);color:white;border:none;border-radius:10px;padding:11px 16px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:background 0.15s,transform 0.1s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;}
+.btn:hover{background:var(--blue-deep);}
+.btn:active{transform:scale(0.97);}
+.btn.ghost{background:var(--off);color:var(--text2);border:1.5px solid var(--border2);}
+.btn.ghost:hover{background:var(--off2);}
+.btn.success{background:var(--green);color:#fff;}
+.btn.full{width:100%;justify-content:center;padding:13px;}
+.btn.sm{padding:7px 12px;font-size:12px;border-radius:8px;}
+.search-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:14px;box-shadow:var(--shadow-sm);}
+.field-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:9px;}
+.input-row{display:flex;gap:8px;}
+.input-wrap{flex:1;position:relative;}
+.input-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+.input-wrap input{padding-left:35px;}
+.result-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:18px;margin-bottom:10px;box-shadow:var(--shadow-sm);animation:fadeUp 0.22s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.result-card.found{border-color:var(--blue);}
+.result-card.notfound{border-color:var(--red);}
+.result-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px;}
+.result-name{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-0.2px;line-height:1.3;}
+.result-imei{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);margin-top:3px;}
+.state-chip{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;text-transform:uppercase;letter-spacing:0.3px;flex-shrink:0;}
+.state-Nuevo{background:#e8f5e9;color:#2e7d32;}
+.state-NuevoSellado{background:#e3f2fd;color:#1565c0;}
+.state-Usado{background:#f3f4f8;color:#4a4f6a;}
+.state-SemiNuevo{background:#fff8e1;color:#e65100;}
+.state-Damaged{background:#ffeef0;color:#c62828;}
+.prices-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.price-box-sell{background:var(--blue-light);border:1px solid rgba(26,107,255,0.2);border-radius:12px;padding:12px 14px;}
+.price-box-buy{background:var(--off);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;}
+.price-box-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px;}
+.price-box-sell .price-box-label{color:var(--blue-deep);}
+.price-box-buy .price-box-label{color:var(--text3);}
+.price-sell-val{font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--blue);letter-spacing:-0.5px;}
+.buy-row{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.price-buy-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:600;color:var(--text2);letter-spacing:-0.5px;}
+.price-buy-hidden{font-family:'DM Mono',monospace;font-size:20px;font-weight:600;color:var(--text2);filter:blur(7px);user-select:none;-webkit-user-select:none;pointer-events:none;letter-spacing:-0.5px;}
+.eye-btn{background:var(--white);border:1.5px solid var(--border2);border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.15s,border-color 0.15s,transform 0.1s;flex-shrink:0;}
+.eye-btn:hover{background:var(--off2);border-color:var(--blue);}
+.eye-btn:active{transform:scale(0.9);}
+.eye-btn svg{width:16px;height:16px;stroke:var(--blue);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.tags{display:flex;flex-wrap:wrap;gap:5px;}
+.tag{background:var(--off);border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:11px;color:var(--text2);font-weight:500;}
+.cam-card{background:var(--white);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow-sm);}
+.cam-top{padding:13px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.cam-top h3{font-size:13px;font-weight:700;}
+.status-pill{display:flex;align-items:center;gap:5px;font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--border2);transition:background 0.3s,box-shadow 0.3s;}
+.status-dot.on{background:var(--green);box-shadow:0 0 0 3px rgba(0,192,122,0.2);}
+#video-container{position:relative;width:100%;background:#0a0a12;display:none;}
+#video-container.active{display:block;}
+#cam-video{width:100%;display:block;max-height:260px;object-fit:cover;}
+.viewfinder{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:68%;max-width:240px;height:64px;pointer-events:none;}
+.vf-corner{position:absolute;width:18px;height:18px;border-color:var(--blue);border-style:solid;}
+.vf-tl{top:0;left:0;border-width:2px 0 0 2px;border-radius:2px 0 0 0}
+.vf-tr{top:0;right:0;border-width:2px 2px 0 0;border-radius:0 2px 0 0}
+.vf-bl{bottom:0;left:0;border-width:0 0 2px 2px;border-radius:0 0 0 2px}
+.vf-br{bottom:0;right:0;border-width:0 2px 2px 0;border-radius:0 0 2px 0}
+.scan-line{position:absolute;left:2px;right:2px;height:1.5px;background:linear-gradient(90deg,transparent,var(--blue),transparent);box-shadow:0 0 10px 2px rgba(26,107,255,0.5);animation:scanMove 2.2s ease-in-out infinite;}
+@keyframes scanMove{0%,100%{top:0}50%{top:calc(100% - 2px)}}
+#cam-placeholder{padding:36px 20px;text-align:center;border-bottom:1px solid var(--border);}
+.placeholder-icon{width:52px;height:52px;background:var(--blue-light);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;}
+.placeholder-icon svg{width:24px;height:24px;stroke:var(--blue);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+#cam-placeholder h4{font-size:14px;font-weight:700;margin-bottom:5px;}
+#cam-placeholder p{color:var(--text3);font-size:13px;line-height:1.5;}
+.ios-scan-wrap{padding:14px;border-bottom:1px solid var(--border);}
+.ios-scan-label{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--blue);color:white;border-radius:10px;padding:12px;font-weight:600;font-size:13px;cursor:pointer;transition:background 0.15s;}
+.ios-scan-label svg{width:15px;height:15px;stroke:white;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+#ios-file-input{display:none;}
+.cam-btns{padding:12px 14px;display:flex;gap:8px;border-bottom:1px solid var(--border);}
+.cam-btns .btn{flex:1;justify-content:center;font-size:12px;padding:10px 8px;}
+.info-box{margin:10px 14px;background:var(--blue-light);border:1px solid rgba(26,107,255,0.2);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--blue-deep);line-height:1.5;}
+.info-box.warn{background:#fff8e1;border-color:rgba(255,140,0,0.25);color:#8a5000;}
+.info-box.err{background:#fff0f3;border-color:rgba(255,59,92,0.25);color:#c0122e;}
+.scanned-code{margin:8px 14px;background:var(--off);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-family:'DM Mono',monospace;font-size:12px;color:var(--blue-deep);word-break:break-all;}
+.manual-wrap{padding:0 14px 14px;display:flex;gap:8px;}
+.manual-wrap input{font-family:'DM Mono',monospace;font-size:13px;}
+.section-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin:18px 0 10px;}
+.section-label:first-child{margin-top:0;}
+.form-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow-sm);}
+.ff{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.ff label{font-size:11px;font-weight:600;color:var(--text2);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239299b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;cursor:pointer;}
+.prod-list{display:flex;flex-direction:column;gap:7px;}
+.prod-item{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:9px;box-shadow:var(--shadow-sm);}
+.prod-num{width:26px;height:26px;background:var(--blue-light);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--blue);font-family:'DM Mono',monospace;flex-shrink:0;}
+.prod-info{flex:1;min-width:0;}
+.prod-name{font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.prod-meta{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.prod-price{font-family:'DM Mono',monospace;font-weight:500;font-size:13px;color:var(--blue);white-space:nowrap;}
+.del-btn{background:none;border:1.5px solid var(--border2);color:var(--text3);border-radius:7px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;}
+.del-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.del-btn:hover{border-color:var(--red);color:var(--red);background:#fff0f3;}
+.empty-state{text-align:center;padding:36px 16px;}
+.empty-icon{width:48px;height:48px;background:var(--off2);border-radius:13px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;}
+.empty-icon svg{width:22px;height:22px;stroke:var(--text3);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.empty-state p{color:var(--text3);font-size:13px;line-height:1.5;}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:white;border-radius:12px;padding:11px 18px;font-size:13px;font-weight:600;z-index:999;transition:transform 0.3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;max-width:90vw;text-align:center;box-shadow:0 8px 28px rgba(13,15,26,0.18);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.ok{background:var(--green);}
+.toast.err{background:var(--red);}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-brand">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/></svg>
+    </div>
+    <h1>IMEI <span>Precios</span></h1>
+  </div>
+  <span class="badge" id="badge">0 productos</span>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="goTab('buscar')">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Buscar
+  </div>
+  <div class="tab" onclick="goTab('camara')">
+    <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Camara
+  </div>
+  <div class="tab" onclick="goTab('admin')">
+    <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Gestionar
+  </div>
+</div>
+<div class="panel active" id="panel-buscar">
+  <div class="search-card">
+    <span class="field-label">Buscar producto</span>
+    <div class="input-row">
+      <div class="input-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="q" placeholder="IMEI, modelo o nombre..." oninput="doSearch()" autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
+      <button class="btn ghost" onclick="clearSearch()" style="padding:11px 14px;font-size:15px">&#x2715;</button>
+    </div>
+  </div>
+  <div id="search-out"></div>
+</div>
+<div class="panel" id="panel-camara">
+  <div class="cam-card">
+    <div class="cam-top">
+      <h3>Escanear producto</h3>
+      <div class="status-pill"><span class="status-dot" id="dot"></span><span id="cam-stat-txt">Inactivo</span></div>
+    </div>
+    <div id="video-container">
+      <video id="cam-video" autoplay playsinline muted></video>
+      <div class="viewfinder">
+        <div class="vf-corner vf-tl"></div><div class="vf-corner vf-tr"></div>
+        <div class="vf-corner vf-bl"></div><div class="vf-corner vf-br"></div>
+        <div class="scan-line"></div>
+      </div>
+    </div>
+    <div id="cam-placeholder">
+      <div class="placeholder-icon">
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </div>
+      <h4>Escanear codigo de barras</h4>
+      <p>Usa la camara para leer el IMEI o escribe el numero manualmente.</p>
+    </div>
+    <div id="info-compat" style="display:none"></div>
+    <div id="scanned-out" style="display:none" class="scanned-code"></div>
+    <div class="ios-scan-wrap" id="ios-wrap" style="display:none">
+      <label class="ios-scan-label" for="ios-file-input">
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Fotografiar codigo de barras
+      </label>
+      <input type="file" id="ios-file-input" accept="image/*" capture="environment" onchange="handleIOSPhoto(this)">
+    </div>
+    <div class="cam-btns">
+      <button class="btn" id="btn-cam" onclick="toggleCam()">Activar camara</button>
+      <button class="btn ghost" onclick="toggleManual()">Manual</button>
+    </div>
+    <div id="manual-wrap" style="display:none" class="manual-wrap">
+      <input type="text" id="manual-imei" placeholder="Introduce el IMEI..." autocomplete="off" spellcheck="false" inputmode="numeric" onkeydown="if(event.key==='Enter')buscarManual()">
+      <button class="btn" onclick="buscarManual()">Buscar</button>
+    </div>
+  </div>
+  <div id="cam-results"></div>
+</div>
+<div class="panel" id="panel-admin">
+  <p class="section-label">Anadir producto</p>
+  <div class="form-card">
+    <div class="ff"><label>Nombre y modelo</label><input type="text" id="f-name" placeholder="Samsung Galaxy S24 Ultra 256GB"></div>
+    <div class="ff"><label>IMEI / Serial</label><input type="text" id="f-imei" placeholder="357392XXXXXXXXX" maxlength="20" inputmode="numeric" style="font-family:'DM Mono',monospace;font-size:13px"></div>
+    <div class="two-col">
+      <div class="ff"><label>Precio compra</label><input type="number" id="f-buy" placeholder="250" inputmode="decimal" style="font-family:'DM Mono',monospace"></div>
+      <div class="ff"><label>Precio venta</label><input type="number" id="f-sell" placeholder="320" inputmode="decimal" style="font-family:'DM Mono',monospace"></div>
+    </div>
+    <div class="two-col">
+      <div class="ff"><label>Estado</label>
+        <select id="f-state"><option>Nuevo</option><option>Nuevo Sellado</option><option>Semi Nuevo</option><option>Usado</option><option>Damaged</option></select>
+      </div>
+      <div class="ff"><label>Notas</label><input type="text" id="f-notes" placeholder="256GB, Blanco..."></div>
+    </div>
+    <button class="btn success full" onclick="addProduct()">Anadir producto</button>
+  </div>
+  <p class="section-label" style="margin-top:22px">Inventario &mdash; <span id="count" style="color:var(--blue)">0</span> productos</p>
+  <div class="prod-list" id="prod-list"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+var PRELOADED = [{"id": 1, "name": "Apple iPhone 14 128GB Purple", "imei": "357181338852871", "state": "Usado", "buy": 270.0, "sell": 370.0, "notes": ""}, {"id": 2, "name": "Apple iPhone 16 Pro 128GB Desert Titanium", "imei": "356366404303617", "state": "Usado", "buy": 650.0, "sell": 790.0, "notes": ""}, {"id": 3, "name": "Apple iPhone 12 128GB Black", "imei": "353049116676420", "state": "Usado", "buy": 120.0, "sell": 240.0, "notes": ""}, {"id": 4, "name": "Apple iPhone 12 128GB White", "imei": "353048110055821", "state": "Usado", "buy": 160.0, "sell": 240.0, "notes": ""}, {"id": 5, "name": "Apple iPhone 12 128GB Black", "imei": "353046113132597", "state": "Usado", "buy": 160.0, "sell": 240.0, "notes": ""}, {"id": 6, "name": "Apple iPhone 12 128GB Black", "imei": "353049111524526", "state": "Usado", "buy": 160.0, "sell": 240.0, "notes": ""}, {"id": 7, "name": "Apple iPhone 12 128GB Black", "imei": "357140406454135", "state": "Usado", "buy": 160.0, "sell": 240.0, "notes": ""}, {"id": 8, "name": "Apple iPhone 12 128GB Black", "imei": "357140409745240", "state": "Usado", "buy": 160.0, "sell": 240.0, "notes": ""}, {"id": 9, "name": "Apple iPhone 12 128GB Green", "imei": "354047641493492", "state": "Usado", "buy": 160.0, "sell": 240.0, "notes": ""}, {"id": 10, "name": "Apple iPhone 12 128GB Blue", "imei": "353046119158166", "state": "Usado", "buy": 160.0, "sell": 240.0, "notes": ""}, {"id": 11, "name": "Apple iPhone 12 256GB Red", "imei": "353047110653825", "state": "Usado", "buy": 175.0, "sell": 290.0, "notes": ""}, {"id": 12, "name": "Apple iPhone 12 256GB Purple", "imei": "353066113601581", "state": "Usado", "buy": 175.0, "sell": 290.0, "notes": ""}, {"id": 13, "name": "Apple iPhone 12 256GB Blue", "imei": "351365221814306", "state": "Usado", "buy": 175.0, "sell": 260.0, "notes": ""}, {"id": 14, "name": "Apple iPhone 12 256GB Black", "imei": "353045112980568", "state": "Usado", "buy": 175.0, "sell": 290.0, "notes": ""}, {"id": 15, "name": "Apple iPhone 12 Pro 128GB Gold", "imei": "356690118108479", "state": "Usado", "buy": 205.0, "sell": 300.0, "notes": ""}, {"id": 16, "name": "Apple iPhone 12 Pro 128GB Gold", "imei": "356689110075074", "state": "Usado", "buy": 205.0, "sell": 300.0, "notes": ""}, {"id": 17, "name": "Apple iPhone 12 Pro 128GB Silver", "imei": "356689116020009", "state": "Usado", "buy": 205.0, "sell": 300.0, "notes": ""}, {"id": 18, "name": "Apple iPhone 12 Pro 128GB Silver", "imei": "356688111777910", "state": "Usado", "buy": 205.0, "sell": 300.0, "notes": ""}, {"id": 19, "name": "Apple iPhone 12 Pro 128GB Silver", "imei": "356685114811498", "state": "Usado", "buy": 205.0, "sell": 300.0, "notes": ""}, {"id": 20, "name": "Apple iPhone 12 Pro 128GB Silver", "imei": "356688112083383", "state": "Usado", "buy": 205.0, "sell": 300.0, "notes": ""}, {"id": 21, "name": "Apple iPhone 12 Pro 128GB Pacific Blue", "imei": "356687116077409", "state": "Usado", "buy": 205.0, "sell": 300.0, "notes": ""}, {"id": 22, "name": "Apple iPhone 12 Pro 128GB Pacific Blue", "imei": "354199140094477", "state": "Usado", "buy": 205.0, "sell": 300.0, "notes": ""}, {"id": 23, "name": "Apple iPhone 12 Pro 128GB Graphite", "imei": "356690111603658", "state": "Usado", "buy": 205.0, "sell": 300.0, "notes": ""}, {"id": 24, "name": "Apple iPhone 12 Pro 128GB Graphite", "imei": "356686119189245", "state": "Usado", "buy": 205.0, "sell": 300.0, "notes": ""}, {"id": 25, "name": "Apple iPhone 12 Pro 128GB Graphite", "imei": "358618680095996", "state": "Usado", "buy": 205.0, "sell": 300.0, "notes": ""}, {"id": 26, "name": "Apple iPhone 12 Pro 128GB Graphite", "imei": "356688115173330", "state": "Usado", "buy": 205.0, "sell": 300.0, "notes": ""}, {"id": 27, "name": "Apple iPhone 12 Pro 128GB Graphite", "imei": "354557280256059", "state": "Usado", "buy": 205.0, "sell": 300.0, "notes": ""}, {"id": 28, "name": "Apple iPhone 12 Pro 256GB Graphite", "imei": "356689110712916", "state": "Usado", "buy": 225.0, "sell": 320.0, "notes": ""}, {"id": 29, "name": "Apple iPhone 12 Pro 256GB Graphite", "imei": "356687113753374", "state": "Usado", "buy": 225.0, "sell": 320.0, "notes": ""}, {"id": 30, "name": "Apple iPhone 12 Pro 256GB Pacific Blue", "imei": "356688118779224", "state": "Usado", "buy": 225.0, "sell": 320.0, "notes": ""}, {"id": 31, "name": "Apple iPhone 12 Pro 256GB Silver", "imei": "356688119639534", "state": "Usado", "buy": 225.0, "sell": 320.0, "notes": ""}, {"id": 32, "name": "Apple iPhone 12 Pro 256GB Silver", "imei": "357859910127560", "state": "Usado", "buy": 225.0, "sell": 320.0, "notes": ""}, {"id": 33, "name": "Apple iPhone 12 Pro 256GB Gold", "imei": "354024910077447", "state": "Usado", "buy": 225.0, "sell": 320.0, "notes": ""}, {"id": 34, "name": "Apple iPhone 12 Pro 512GB Pacific Blue", "imei": "356684115476039", "state": "Usado", "buy": 230.0, "sell": 320.0, "notes": ""}, {"id": 35, "name": "Apple iPhone 12 Pro 512GB Graphite", "imei": "356688110170828", "state": "Usado", "buy": 230.0, "sell": 320.0, "notes": ""}, {"id": 36, "name": "Apple iPhone 12 Pro Max 256GB Pacific Blue", "imei": "356725118667635", "state": "Usado", "buy": 275.0, "sell": 390.0, "notes": ""}, {"id": 37, "name": "Apple iPhone 12 Pro Max 512GB Graphite", "imei": "356719114987584", "state": "Usado", "buy": 280.0, "sell": 390.0, "notes": ""}, {"id": 38, "name": "Apple iPhone 12 Pro Max 512GB Graphite", "imei": "356720111993153", "state": "Usado", "buy": 280.0, "sell": 390.0, "notes": ""}, {"id": 39, "name": "Apple iPhone 13 Pro 128GB Graphite", "imei": "356144890971498", "state": "Usado", "buy": 300.0, "sell": 390.0, "notes": ""}, {"id": 40, "name": "Apple iPhone 13 Pro 128GB Silver", "imei": "359339134158319", "state": "Usado", "buy": 300.0, "sell": 390.0, "notes": ""}, {"id": 41, "name": "Apple iPhone 13 Pro 128GB Gold", "imei": "357866891096995", "state": "Usado", "buy": 300.0, "sell": 390.0, "notes": ""}, {"id": 42, "name": "Apple iPhone 13 Pro 128GB Gold", "imei": "356942286575249", "state": "Usado", "buy": 300.0, "sell": 390.0, "notes": ""}, {"id": 43, "name": "Apple iPhone 13 Pro Max 256GB Silver", "imei": "351999621602588", "state": "Usado", "buy": 355.0, "sell": 470.0, "notes": ""}, {"id": 44, "name": "Apple iPhone 13 Pro Max 128GB Gold", "imei": "353027945632442", "state": "Usado", "buy": 330.0, "sell": 430.0, "notes": ""}, {"id": 45, "name": "Apple iPhone 13 Pro 256GB Graphite", "imei": "356310706405548", "state": "Usado", "buy": 325.0, "sell": 400.0, "notes": ""}, {"id": 46, "name": "Apple iPhone 13 Pro 1TB Sierra Blue", "imei": "357866894823965", "state": "Usado", "buy": 345.0, "sell": 440.0, "notes": ""}, {"id": 47, "name": "Apple iPhone 14 Pro 1TB Space Black", "imei": "359449122824143", "state": "Usado", "buy": 440.0, "sell": 540.0, "notes": ""}, {"id": 48, "name": "Apple iPhone 14 128GB Midnight", "imei": "352604722419176", "state": "Usado", "buy": 270.0, "sell": 370.0, "notes": ""}, {"id": 49, "name": "Apple iPhone 14 128GB Midnight", "imei": "351168083747253", "state": "Usado", "buy": 270.0, "sell": 370.0, "notes": ""}, {"id": 50, "name": "Apple iPhone 14 Plus 128GB Purple", "imei": "351136712665931", "state": "Usado", "buy": 310.0, "sell": 440.0, "notes": ""}, {"id": 51, "name": "Apple iPhone 14 Pro 256GB Space Black", "imei": "351850721129123", "state": "Usado", "buy": 400.0, "sell": 520.0, "notes": ""}, {"id": 52, "name": "Apple iPhone 14 Pro Max 128GB Deep Purple", "imei": "350270054537399", "state": "Usado", "buy": 430.0, "sell": 540.0, "notes": ""}, {"id": 53, "name": "Apple iPhone 14 Pro Max 256GB Space Black", "imei": "353425688612672", "state": "Usado", "buy": 460.0, "sell": 590.0, "notes": ""}, {"id": 54, "name": "Apple iPhone 14 Pro Max 512GB Space Black", "imei": "351651525109968", "state": "Usado", "buy": 485.0, "sell": 640.0, "notes": ""}, {"id": 55, "name": "Apple iPhone 15 128GB Green", "imei": "354704790540156", "state": "Usado", "buy": 355.0, "sell": 460.0, "notes": ""}, {"id": 56, "name": "Apple iPhone 15 128GB Yellow", "imei": "356596723942667", "state": "Usado", "buy": 355.0, "sell": 460.0, "notes": ""}, {"id": 57, "name": "Apple iPhone 15 Plus 128GB Blue", "imei": "357681618793760", "state": "Usado", "buy": 380.0, "sell": 490.0, "notes": ""}, {"id": 58, "name": "Apple iPhone 15 Pro 128GB White Titanium", "imei": "355721795188400", "state": "Usado", "buy": 460.0, "sell": 570.0, "notes": ""}, {"id": 59, "name": "Apple iPhone 15 Pro 128GB White Titanium", "imei": "356597920013351", "state": "Usado", "buy": 460.0, "sell": 570.0, "notes": ""}, {"id": 60, "name": "Apple iPhone 15 Pro 128GB Black Titanium", "imei": "355721795610429", "state": "Usado", "buy": 460.0, "sell": 570.0, "notes": ""}, {"id": 61, "name": "Apple iPhone 15 Pro 256GB White Titanium", "imei": "355721798880862", "state": "Usado", "buy": 490.0, "sell": 590.0, "notes": ""}, {"id": 62, "name": "Apple iPhone 15 Pro 256GB White Titanium", "imei": "354230913937798", "state": "Usado", "buy": 490.0, "sell": 590.0, "notes": ""}, {"id": 63, "name": "Apple iPhone 15 Pro 256GB Natural Titanium", "imei": "355721798214120", "state": "Usado", "buy": 490.0, "sell": 590.0, "notes": ""}, {"id": 64, "name": "Apple iPhone 15 Pro Max 1TB Natural Titanium", "imei": "354550169680465", "state": "Usado", "buy": 590.0, "sell": 690.0, "notes": ""}, {"id": 65, "name": "Apple iPhone 16 Pro 1TB Black Titanium", "imei": "359689535534306", "state": "Usado", "buy": 725.0, "sell": 840.0, "notes": ""}, {"id": 66, "name": "ZTE BLADE A35 E 32GB+4GB", "imei": "867832082443654", "state": "Nuevo", "buy": 46.0, "sell": 115.0, "notes": ""}, {"id": 67, "name": "ZTE BLADE A35 E 32GB+4GB", "imei": "867832082445097", "state": "Nuevo", "buy": 46.0, "sell": 115.0, "notes": ""}, {"id": 68, "name": "ZTE BLADE A35 E 32GB+4GB", "imei": "867832082444108", "state": "Nuevo", "buy": 46.0, "sell": 115.0, "notes": ""}, {"id": 69, "name": "ZTE BLADE A35 E 32GB+4GB", "imei": "867832082440437", "state": "Nuevo", "buy": 46.0, "sell": 115.0, "notes": ""}, {"id": 70, "name": "ZTE BLADE A35 E 32GB+4GB", "imei": "863787085578811", "state": "Nuevo", "buy": 46.0, "sell": 115.0, "notes": ""}, {"id": 71, "name": "ZTE BLADE A35 E 32GB+4GB", "imei": "863787085574349", "state": "Nuevo", "buy": 46.0, "sell": 115.0, "notes": ""}, {"id": 72, "name": "IPhone 17 Pro Max 256GB Silver", "imei": "353008931597484", "state": "Nuevo Sellado", "buy": 1180.0, "sell": 1289.0, "notes": ""}, {"id": 73, "name": "IPhone 17 Pro Max 256GB Silver", "imei": "353008931480822", "state": "Nuevo Sellado", "buy": 1180.0, "sell": 1289.0, "notes": ""}, {"id": 74, "name": "IPhone 17 Pro Max 256GB Cosmic Orange", "imei": "353806440155219", "state": "Nuevo Sellado", "buy": 1180.0, "sell": 1289.0, "notes": ""}, {"id": 75, "name": "Apple iPhone 11 Pro 64GB Matte Space Gray", "imei": "353833107458272", "state": "Usado", "buy": 130.0, "sell": 240.0, "notes": ""}, {"id": 76, "name": "Apple iPad A16 (A3354) 11 128GB Silver WiFi", "imei": "SD12XNL927D", "state": "Usado", "buy": 150.0, "sell": 260.0, "notes": ""}, {"id": 77, "name": "IPhone 17 Pro Max 256GB Cosmic Orange", "imei": "354687616850836", "state": "Semi Nuevo", "buy": 900.0, "sell": 1040.0, "notes": ""}, {"id": 78, "name": "Apple iPhone SE (2020) 64GB White", "imei": "356784113676612", "state": "Usado", "buy": 76.0, "sell": 135.0, "notes": ""}, {"id": 79, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356796112716298", "state": "Usado", "buy": 76.0, "sell": 135.0, "notes": ""}, {"id": 80, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356785114320647", "state": "Usado", "buy": 76.0, "sell": 135.0, "notes": ""}, {"id": 81, "name": "Apple iPhone 14 Pro Max 256GB Silver", "imei": "58281860310725", "state": "Usado", "buy": 470.0, "sell": 600.0, "notes": ""}, {"id": 82, "name": "Apple iPhone 14 Pro 256GB Gold", "imei": "352149870774188", "state": "Usado", "buy": 400.0, "sell": 490.0, "notes": ""}, {"id": 83, "name": "Apple iPhone 13 Pro Max 128GB Sierra Blue", "imei": "350419537989061", "state": "Usado", "buy": 238.0, "sell": 490.0, "notes": ""}, {"id": 84, "name": "Apple iPhone 15 Pro Max 256GB Blue Titanium", "imei": "353134989867155", "state": "Usado", "buy": 580.0, "sell": 680.0, "notes": ""}, {"id": 85, "name": "ZTE BLADE A76 128GB+12GB", "imei": "866492080382544", "state": "Nuevo", "buy": 65.0, "sell": 130.0, "notes": ""}, {"id": 86, "name": "ZTE BLADE A76 128GB+12GB", "imei": "866492080278189", "state": "Nuevo", "buy": 65.0, "sell": 130.0, "notes": ""}, {"id": 87, "name": "ZTE BLADE A76 128GB+12GB", "imei": "866492080384326", "state": "Nuevo", "buy": 65.0, "sell": 130.0, "notes": ""}, {"id": 88, "name": "Xiaomi Redmi 15C 128GB+4GB Mint Green", "imei": "862453084434669", "state": "Nuevo", "buy": 82.0, "sell": 140.0, "notes": ""}, {"id": 89, "name": "Xiaomi Redmi 15C 4G 128GB+4GB Moonlight Blue", "imei": "865422075311142", "state": "Nuevo", "buy": 82.0, "sell": 140.0, "notes": ""}, {"id": 90, "name": "Xiaomi Redmi 15C 4G 128GB+4GB Twilight Orange", "imei": "862453085605028", "state": "Nuevo", "buy": 82.0, "sell": 140.0, "notes": ""}, {"id": 91, "name": "KDX A07 PRO 64GB", "imei": "862544065954707", "state": "Nuevo", "buy": 60.0, "sell": 130.0, "notes": ""}, {"id": 92, "name": "KDX A07 PRO 64GB", "imei": "862544065952222", "state": "Nuevo", "buy": 60.0, "sell": 130.0, "notes": ""}, {"id": 93, "name": "Apple iPhone XR 64GB White", "imei": "356458107522377", "state": "Usado", "buy": 104.0, "sell": 190.0, "notes": ""}, {"id": 94, "name": "Apple iPhone 13 mini 256GB Red", "imei": "353873780369453", "state": "Usado", "buy": 226.0, "sell": 300.0, "notes": ""}, {"id": 95, "name": "Apple iPhone 13 mini 256GB Midnight", "imei": "351374051868739", "state": "Usado", "buy": 226.0, "sell": 300.0, "notes": ""}, {"id": 96, "name": "Apple iPhone 13 mini 256GB Green", "imei": "351374052680877", "state": "Usado", "buy": 226.0, "sell": 300.0, "notes": ""}, {"id": 97, "name": "Apple iPhone 12 mini 128GB Green", "imei": "353011116733742", "state": "Usado", "buy": 142.0, "sell": 215.0, "notes": ""}, {"id": 98, "name": "Apple iPhone 12 mini 256GB Purple", "imei": "353015112910873", "state": "Usado", "buy": 151.0, "sell": 225.0, "notes": ""}, {"id": 99, "name": "Apple iPhone 12 mini 256GB Purple", "imei": "353015114949473", "state": "Usado", "buy": 151.0, "sell": 225.0, "notes": ""}, {"id": 100, "name": "Apple iPhone 12 mini 256GB Black", "imei": "353010119613612", "state": "Usado", "buy": 151.0, "sell": 225.0, "notes": ""}, {"id": 101, "name": "Apple iPhone 12 mini 256GB White", "imei": "353016116234666", "state": "Usado", "buy": 151.0, "sell": 225.0, "notes": ""}, {"id": 102, "name": "Apple iPhone 12 mini 256GB Blue", "imei": "353014119963936", "state": "Usado", "buy": 151.0, "sell": 225.0, "notes": ""}, {"id": 103, "name": "Apple iPhone 12 mini 256GB Red", "imei": "353010113054805", "state": "Usado", "buy": 151.0, "sell": 225.0, "notes": ""}, {"id": 104, "name": "Apple iPhone 12 mini 128GB Red", "imei": "353012111567770", "state": "Usado", "buy": 142.0, "sell": 215.0, "notes": ""}, {"id": 105, "name": "Apple iPhone 13 mini 256GB Midnight", "imei": "353873782645272", "state": "Usado", "buy": 226.0, "sell": 300.0, "notes": ""}, {"id": 106, "name": "Apple iPhone 13 mini 256GB Pink", "imei": "353410575469410", "state": "Usado", "buy": 230.0, "sell": 300.0, "notes": ""}, {"id": 107, "name": "Apple iPhone 12 mini 128GB Red", "imei": "353010112679040", "state": "Usado", "buy": 145.0, "sell": 215.0, "notes": ""}, {"id": 108, "name": "Apple iPhone 12 mini 128GB White", "imei": "353014110435272", "state": "Usado", "buy": 145.0, "sell": 215.0, "notes": ""}, {"id": 109, "name": "Apple iPhone 12 mini 128GB Black", "imei": "353014115912051", "state": "Usado", "buy": 145.0, "sell": 215.0, "notes": ""}, {"id": 110, "name": "Apple iPhone 13 128GB Green", "imei": "357479182443916", "state": "Usado", "buy": 235.0, "sell": 305.0, "notes": ""}, {"id": 111, "name": "Apple iPhone 14 Pro Max 256GB Space Black", "imei": "359451591615291", "state": "Usado", "buy": 460.0, "sell": 600.0, "notes": ""}, {"id": 112, "name": "Apple iPhone 14 Pro Max 256GB Silver", "imei": "351643935945347", "state": "Usado", "buy": 460.0, "sell": 600.0, "notes": ""}, {"id": 113, "name": "Apple iPhone 11 64GB Red", "imei": "356817118357232", "state": "Usado", "buy": 130.0, "sell": 200.0, "notes": ""}, {"id": 114, "name": "Apple iPhone 11 64GB Black", "imei": "353505453057680", "state": "Usado", "buy": 130.0, "sell": 210.0, "notes": ""}, {"id": 115, "name": "Apple iPhone 11 64GB Black", "imei": "359139869975055", "state": "Usado", "buy": 130.0, "sell": 210.0, "notes": ""}, {"id": 116, "name": "Apple iPhone 11 64GB Black", "imei": "356314142744148", "state": "Usado", "buy": 130.0, "sell": 210.0, "notes": ""}, {"id": 117, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "357145418548048", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 118, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "355598142623416", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 119, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "355555750961959", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 120, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "351859140708276", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 121, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "351458130919215", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 122, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "357145419429693", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 123, "name": "Apple iPhone SE (2020) 256GB Black", "imei": "351458131838414", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 124, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356790119893655", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 125, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "354854627172200", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 126, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356790119665152", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 127, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "355555759421583", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 128, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "359230407629252", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 129, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "355555759646999", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 130, "name": "Apple iPhone SE (2020) 256GB Black", "imei": "356743117136866", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 131, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "359230406295311", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 132, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356106842198538", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 133, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356743119069537", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 134, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "355555759002680", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 135, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "352980538591865", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 136, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356106842173614", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 137, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356779114755944", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 138, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "352980537229343", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 139, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "355555758991420", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 140, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "352810157170495", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 141, "name": "Apple iPhone SE (2020) 64GB Red", "imei": "356725663139725", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 142, "name": "Apple iPhone SE (2020) 64GB Red", "imei": "351458133204326", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 143, "name": "Apple iPhone SE (2020) 64GB Red", "imei": "356711118842329", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 144, "name": "Apple iPhone SE (2020) 64GB Red", "imei": "351458134045991", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 145, "name": "Apple iPhone SE (2020) 64GB Red", "imei": "354430710042764", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 146, "name": "Apple iPhone SE (2020) 64GB Red", "imei": "351889401751517", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 147, "name": "Apple iPhone SE (2020) 64GB Red", "imei": "356743110453151", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 148, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "357145418676088", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 149, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356778110193241", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 150, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356779117565738", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 151, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "357945444327519", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 152, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356493102118160", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 153, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "355048443115043", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 154, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "352980537182211", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 155, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356496101660942", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 156, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356742119744511", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 157, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356743110033342", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 158, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356790119647184", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 159, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356779115578709", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 160, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "350725744114040", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 161, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356742119988662", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 162, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "351889402859202", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 163, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356132586509326", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 164, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "355555753013089", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 165, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356106843490470", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 166, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "352810154859546", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 167, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356711114230065", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 168, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "357945445663672", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 169, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "357145419152881", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 170, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356789113371478", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 171, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "355048440975266", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 172, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "356779113633068", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 173, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "355598144965799", "state": "Usado", "buy": 85.0, "sell": 140.0, "notes": ""}, {"id": 174, "name": "Apple iPhone 12 64GB White", "imei": "359879853202152", "state": "Usado", "buy": 200.0, "sell": 240.0, "notes": ""}, {"id": 175, "name": "Apple iPhone 16e 128GB+8GB White", "imei": "355021410534116", "state": "Usado", "buy": 350.0, "sell": 490.0, "notes": ""}, {"id": 176, "name": "Apple iPhone 16 Pro 128GB Desert Titanium", "imei": "350331589572523", "state": "Usado", "buy": 600.0, "sell": 690.0, "notes": ""}, {"id": 177, "name": "Xiaomi Redmi 15 4G 128GB+6GB Sandy Purple", "imei": "861434078210803", "state": "Nuevo", "buy": 106.0, "sell": 170.0, "notes": ""}, {"id": 178, "name": "Apple iPhone 16 Pro Max 256GB Desert Titanium", "imei": "350108722914766", "state": "Usado", "buy": 700.0, "sell": 840.0, "notes": ""}, {"id": 179, "name": "Apple iPhone 17 256GB+8GB White", "imei": "352579430852761", "state": "Nuevo Sellado", "buy": 705.0, "sell": 840.0, "notes": ""}, {"id": 180, "name": "Apple iPhone 14 128GB Midnight", "imei": "350967687472163", "state": "Usado", "buy": 270.0, "sell": 385.0, "notes": ""}, {"id": 181, "name": "Apple iPhone 14 128GB Midnight", "imei": "356879778514643", "state": "Usado", "buy": 270.0, "sell": 385.0, "notes": ""}, {"id": 182, "name": "Apple iPhone 16 128GB Black", "imei": "358046154524467", "state": "Semi Nuevo", "buy": 470.0, "sell": 640.0, "notes": ""}, {"id": 183, "name": "Apple iPhone 16 Pro Max 256GB Desert Titanium", "imei": "355564841128537", "state": "Usado", "buy": 670.0, "sell": 790.0, "notes": ""}, {"id": 184, "name": "Apple iPhone 15 128GB Pink", "imei": "357992870490163", "state": "Usado", "buy": 350.0, "sell": 520.0, "notes": ""}, {"id": 185, "name": "Apple iPhone X 64GB Space Gray", "imei": "356738089310176", "state": "Usado", "buy": 105.0, "sell": 180.0, "notes": ""}, {"id": 186, "name": "Apple iPhone XS 64GB Gold", "imei": "357236095103569", "state": "Usado", "buy": 112.0, "sell": 190.0, "notes": ""}, {"id": 187, "name": "Apple iPhone XS 256GB Space Gray", "imei": "357237098570754", "state": "Usado", "buy": 135.0, "sell": 205.0, "notes": ""}, {"id": 188, "name": "Apple iPhone XS 256GB Space Gray", "imei": "357237095778343", "state": "Usado", "buy": 135.0, "sell": 205.0, "notes": ""}, {"id": 189, "name": "Apple iPhone XS 256GB Space Gray", "imei": "357235093321934", "state": "Usado", "buy": 135.0, "sell": 205.0, "notes": ""}, {"id": 190, "name": "Apple iPhone XS 256GB Space Gray", "imei": "357236099804576", "state": "Usado", "buy": 135.0, "sell": 205.0, "notes": ""}, {"id": 191, "name": "Apple iPhone XS 256GB Space Gray", "imei": "357238098531192", "state": "Usado", "buy": 135.0, "sell": 205.0, "notes": ""}, {"id": 192, "name": "Apple iPhone XS 256GB Space Gray", "imei": "357236099473299", "state": "Usado", "buy": 135.0, "sell": 205.0, "notes": ""}, {"id": 193, "name": "Apple iPhone XS 256GB Space Gray", "imei": "357232095184162", "state": "Usado", "buy": 135.0, "sell": 205.0, "notes": ""}, {"id": 194, "name": "Apple iPhone XS 256GB Space Gray", "imei": "357232095377196", "state": "Usado", "buy": 135.0, "sell": 205.0, "notes": ""}, {"id": 195, "name": "Apple iPhone XS 256GB Space Gray", "imei": "357236093046372", "state": "Usado", "buy": 135.0, "sell": 205.0, "notes": ""}, {"id": 196, "name": "Apple iPhone XS 256GB Gold", "imei": "357235090897753", "state": "Usado", "buy": 135.0, "sell": 205.0, "notes": ""}, {"id": 197, "name": "Apple iPhone XS 256GB Gold", "imei": "357239092526451", "state": "Usado", "buy": 135.0, "sell": 205.0, "notes": ""}, {"id": 198, "name": "Apple iPhone XS 256GB Gold", "imei": "357235091706367", "state": "Usado", "buy": 135.0, "sell": 205.0, "notes": ""}, {"id": 199, "name": "Apple iPhone XS 256GB Gold", "imei": "353158100563096", "state": "Usado", "buy": 135.0, "sell": 205.0, "notes": ""}, {"id": 200, "name": "Apple iPhone XS 64GB Space Gray", "imei": "357233098772912", "state": "Usado", "buy": 112.0, "sell": 190.0, "notes": ""}, {"id": 201, "name": "Apple iPhone XS 64GB Space Gray", "imei": "357224096854323", "state": "Usado", "buy": 112.0, "sell": 190.0, "notes": ""}, {"id": 202, "name": "Apple iPhone XS 64GB Gold", "imei": "357235091868886", "state": "Usado", "buy": 112.0, "sell": 190.0, "notes": ""}, {"id": 203, "name": "Apple iPhone XS 64GB Gold", "imei": "357235091606526", "state": "Usado", "buy": 112.0, "sell": 190.0, "notes": ""}, {"id": 204, "name": "Apple iPhone XS 256GB Silver", "imei": "357230099440242", "state": "Usado", "buy": 135.0, "sell": 205.0, "notes": ""}, {"id": 205, "name": "Apple iPhone XS 256GB Silver", "imei": "357236092113991", "state": "Usado", "buy": 135.0, "sell": 205.0, "notes": ""}, {"id": 206, "name": "Apple iPhone XS 256GB Silver", "imei": "357238098564870", "state": "Usado", "buy": 135.0, "sell": 205.0, "notes": ""}, {"id": 207, "name": "Apple iPhone XS 256GB Silver", "imei": "357234096124692", "state": "Usado", "buy": 135.0, "sell": 205.0, "notes": ""}, {"id": 208, "name": "Apple iPhone XS 64GB Silver", "imei": "357234093673881", "state": "Usado", "buy": 112.0, "sell": 190.0, "notes": ""}, {"id": 209, "name": "Apple iPhone XS 64GB Silver", "imei": "353162100589283", "state": "Usado", "buy": 112.0, "sell": 190.0, "notes": ""}, {"id": 210, "name": "Apple iPhone XS 64GB Silver", "imei": "357239097625811", "state": "Usado", "buy": 112.0, "sell": 190.0, "notes": ""}, {"id": 211, "name": "Apple iPhone X 64GB Silver", "imei": "356740088094595", "state": "Usado", "buy": 105.0, "sell": 180.0, "notes": ""}, {"id": 212, "name": "Apple iPhone 13 128GB Starlight", "imei": "359551277651450", "state": "Usado", "buy": 235.0, "sell": 305.0, "notes": ""}, {"id": 213, "name": "Apple iPhone 13 128GB Midnight", "imei": "357894923223775", "state": "Usado", "buy": 235.0, "sell": 305.0, "notes": ""}, {"id": 214, "name": "Apple iPhone X 64GB Silver", "imei": "356740087344413", "state": "Usado", "buy": 105.0, "sell": 180.0, "notes": ""}, {"id": 215, "name": "Apple iPhone X 64GB Space Gray", "imei": "356742088458135", "state": "Usado", "buy": 105.0, "sell": 180.0, "notes": ""}, {"id": 216, "name": "Apple iPhone X 64GB Space Gray", "imei": "356742081471317", "state": "Usado", "buy": 105.0, "sell": 180.0, "notes": ""}, {"id": 217, "name": "Apple iPhone 13 128GB Midnight", "imei": "354833969333612", "state": "Usado", "buy": 235.0, "sell": 305.0, "notes": ""}, {"id": 218, "name": "Apple iPhone 13 128GB Midnight", "imei": "357654173172381", "state": "Usado", "buy": 235.0, "sell": 305.0, "notes": ""}, {"id": 219, "name": "Apple iPhone 13 Pro Max 256GB Sierra Blue", "imei": "352865678304510", "state": "Usado", "buy": 380.0, "sell": 465.0, "notes": ""}, {"id": 220, "name": "Apple iPhone 13 Pro Max 256GB Sierra Blue", "imei": "354941739853379", "state": "Usado", "buy": 380.0, "sell": 465.0, "notes": ""}, {"id": 221, "name": "Apple iPhone 13 Pro Max 256GB Graphite", "imei": "353967818676598", "state": "Usado", "buy": 380.0, "sell": 465.0, "notes": ""}, {"id": 222, "name": "A17 MINI", "imei": "359879060356437", "state": "Nuevo Sellado", "buy": 29.0, "sell": 100.0, "notes": ""}, {"id": 223, "name": "Apple iPhone 13 mini 256GB Midnight", "imei": "352922187252258", "state": "Usado", "buy": 226.0, "sell": 300.0, "notes": ""}, {"id": 224, "name": "Apple iPhone 13 Pro 512GB Sierra Blue", "imei": "352835980130101", "state": "Usado", "buy": 350.0, "sell": 440.0, "notes": ""}, {"id": 225, "name": "Apple iPhone 12 Pro Max 256GB Graphite", "imei": "354692275772172", "state": "Usado", "buy": 310.0, "sell": 425.0, "notes": ""}, {"id": 226, "name": "Apple iPhone 15 128GB Blue", "imei": "350896715703556", "state": "Usado", "buy": 385.0, "sell": 490.0, "notes": ""}, {"id": 227, "name": "Apple iPhone 14 Plus 128GB Purple", "imei": "359838717505192", "state": "Usado", "buy": 315.0, "sell": 490.0, "notes": ""}, {"id": 228, "name": "Xiaomi Redmi A5 4G 128GB+4GB Ocean Blue", "imei": "862144076005621", "state": "Nuevo", "buy": 60.0, "sell": 120.0, "notes": ""}, {"id": 229, "name": "Apple iPhone 14 128GB Purple", "imei": "354768885794663", "state": "Usado", "buy": 290.0, "sell": 410.0, "notes": ""}, {"id": 230, "name": "ZTE BLADE A36 64GB+12GB", "imei": "865449081053160", "state": "Nuevo Sellado", "buy": 49.0, "sell": 110.0, "notes": ""}, {"id": 231, "name": "Apple iPhone 13 128GB Midnight", "imei": "352561333807555", "state": "Usado", "buy": 265.0, "sell": 350.0, "notes": ""}, {"id": 232, "name": "Apple iPhone 14 Plus 128GB Starlight", "imei": "359838711070763", "state": "Usado", "buy": 325.0, "sell": 450.0, "notes": ""}, {"id": 233, "name": "Samsung Galaxy S25 Ultra 256GB+12GB Titanium Silver Blue", "imei": "353551770027428", "state": "Nuevo Sellado", "buy": 835.0, "sell": 940.0, "notes": ""}, {"id": 234, "name": "ZTE BLADE A35 64GB-6GB", "imei": "863926070077567", "state": "Nuevo", "buy": 49.0, "sell": 115.0, "notes": ""}, {"id": 235, "name": "Samsung Galaxy A17 4G 128GB+4GB Black", "imei": "351788364355854", "state": "Nuevo", "buy": 115.0, "sell": 185.0, "notes": ""}, {"id": 236, "name": "Xiaomi Redmi A5 4G 128GB+4GB Ocean Blue", "imei": "862144075974223", "state": "Nuevo", "buy": 58.0, "sell": 120.0, "notes": ""}, {"id": 237, "name": "Redmi Pad SE 4GB+128GB 11 Graphite Gray WiFi", "imei": "693255440371", "state": "Nuevo", "buy": 120.0, "sell": 220.0, "notes": ""}, {"id": 238, "name": "Samsung Galaxy A55 128GB+8GB Navy", "imei": "350876475100672", "state": "Nuevo", "buy": 270.0, "sell": 360.0, "notes": ""}, {"id": 239, "name": "Samsung Galaxy A36 128GB+6GB Black", "imei": "355416130748303", "state": "Nuevo", "buy": 210.0, "sell": 320.0, "notes": ""}, {"id": 240, "name": "Samsung Galaxy A36 128GB+6GB Black", "imei": "355416130692709", "state": "Nuevo", "buy": 210.0, "sell": 320.0, "notes": ""}, {"id": 241, "name": "Apple iPhone 12 128GB Black", "imei": "353048110757665", "state": "Usado", "buy": 188.0, "sell": 290.0, "notes": ""}, {"id": 242, "name": "Apple iPhone 12 256GB Blue", "imei": "353049115908428", "state": "Usado", "buy": 188.0, "sell": 290.0, "notes": ""}, {"id": 243, "name": "Apple iPhone 12 256GB Black", "imei": "353045111822779", "state": "Usado", "buy": 188.0, "sell": 290.0, "notes": ""}, {"id": 244, "name": "Apple iPhone 12 64GB White", "imei": "353560901185211", "state": "Usado", "buy": 168.0, "sell": 240.0, "notes": ""}, {"id": 245, "name": "Apple iPhone 12 64GB White", "imei": "352380202229613", "state": "Usado", "buy": 168.0, "sell": 240.0, "notes": ""}, {"id": 246, "name": "Apple iPhone 12 64GB Blue", "imei": "351109220663524", "state": "Usado", "buy": 168.0, "sell": 240.0, "notes": ""}, {"id": 247, "name": "Apple iPhone 12 64GB Purple", "imei": "359035291725763", "state": "Usado", "buy": 168.0, "sell": 240.0, "notes": ""}, {"id": 248, "name": "Apple iPhone 12 64GB Black", "imei": "353046117718318", "state": "Usado", "buy": 168.0, "sell": 240.0, "notes": ""}, {"id": 249, "name": "Apple iPhone 12 64GB Black", "imei": "355917841791458", "state": "Usado", "buy": 168.0, "sell": 240.0, "notes": ""}, {"id": 250, "name": "Apple iPhone 12 64GB Black", "imei": "353905992412455", "state": "Usado", "buy": 168.0, "sell": 240.0, "notes": ""}, {"id": 251, "name": "Apple iPhone 12 64GB Red", "imei": "353050119825303", "state": "Usado", "buy": 168.0, "sell": 240.0, "notes": ""}, {"id": 252, "name": "Apple iPhone 12 128GB Red", "imei": "353048111989911", "state": "Usado", "buy": 188.0, "sell": 250.0, "notes": ""}, {"id": 253, "name": "Apple iPhone 12 128GB Blue", "imei": "353050114376633", "state": "Usado", "buy": 188.0, "sell": 250.0, "notes": ""}, {"id": 254, "name": "Apple iPhone 14 Pro 128GB Space Black", "imei": "354540531926183", "state": "Usado", "buy": 400.0, "sell": 590.0, "notes": ""}, {"id": 255, "name": "Apple iPhone 12 64GB Red", "imei": "353051116757770", "state": "Usado", "buy": 188.0, "sell": 270.0, "notes": ""}, {"id": 256, "name": "Apple iPhone 13 Pro Max 128GB Gold", "imei": "50249441491536", "state": "Usado", "buy": 420.0, "sell": 520.0, "notes": ""}, {"id": 257, "name": "SAMSUNG A17 5G 128GB-4GB", "imei": "350042792702886", "state": "Nuevo", "buy": 157.0, "sell": 220.0, "notes": ""}, {"id": 258, "name": "DOOGEE U11 128GB 16GB", "imei": "X002B3J1EN-7", "state": "Nuevo", "buy": 60.0, "sell": 140.0, "notes": ""}, {"id": 259, "name": "JUSYEA J9 256GB 16GB", "imei": "X002BS5H2N8", "state": "Nuevo", "buy": 60.0, "sell": 140.0, "notes": ""}, {"id": 260, "name": "Nothing CMF Phone 1 256GB+8GB Black", "imei": "351740833810662", "state": "Nuevo", "buy": 130.0, "sell": 200.0, "notes": ""}, {"id": 261, "name": "SAMSUNG A26 5G COLOUR MINT 128GB+6GB", "imei": "350439766952028", "state": "Nuevo", "buy": 165.0, "sell": 240.0, "notes": ""}, {"id": 262, "name": "DOOGEE NOTE 58 PRO 256GB+32GB COLOUR DESERT GOLD", "imei": "357025420703908", "state": "Nuevo", "buy": 90.0, "sell": 180.0, "notes": ""}, {"id": 263, "name": "Samsung Galaxy A36 256GB+8GB Lime", "imei": "351557835855143", "state": "Nuevo", "buy": 233.0, "sell": 300.0, "notes": ""}, {"id": 264, "name": "Xiaomi Redmi 14C 128GB+4GB Midnight Black", "imei": "864102077523867", "state": "Nuevo", "buy": 80.0, "sell": 140.0, "notes": ""}, {"id": 265, "name": "Apple iPhone 16 Pro 256GB White Titanium", "imei": "355171957620487", "state": "Usado", "buy": 670.0, "sell": 860.0, "notes": ""}, {"id": 266, "name": "Xiaomi Redmi 13C 5G 128GB+4GB Starlight Black", "imei": "868278063772605", "state": "Nuevo", "buy": 80.0, "sell": 170.0, "notes": ""}, {"id": 267, "name": "Apple iPhone 12 64GB Black", "imei": "352281796491850", "state": "Usado", "buy": 192.0, "sell": 260.0, "notes": ""}, {"id": 268, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354883092951913", "state": "Usado", "buy": 120.0, "sell": 220.0, "notes": ""}, {"id": 269, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354883092651307", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 270, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354885093449409", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 271, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354885093486351", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 272, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354884093207057", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 273, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354885092198916", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 274, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "353034094806108", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 275, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354883090865180", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 276, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "353038098611026", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 277, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354882093507013", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 278, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354883092969576", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 279, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354882093733056", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 280, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354885093317457", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 281, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354883090754699", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 282, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354884092940559", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 283, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354887092914334", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 284, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354883093143551", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 285, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354882093778440", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 286, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354887093059576", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 287, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354885093554935", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 288, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354885093250146", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 289, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354883092867325", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 290, "name": "APPLE IPAD 6TH GEN 128GB SIM", "imei": "354888095091492", "state": "Usado", "buy": 130.0, "sell": 220.0, "notes": ""}, {"id": 291, "name": "beats solo buds", "imei": "195949116636", "state": "Nuevo", "buy": 50.0, "sell": 130.0, "notes": ""}, {"id": 292, "name": "Apple Watch SE 2nd Gen GPS Starlight Aluminium 40mm", "imei": "SDX3VJQ6M12", "state": "Nuevo", "buy": 180.0, "sell": 340.0, "notes": ""}, {"id": 293, "name": "ZTE Blade V60 Design 256GB+6GB Dark Blue", "imei": "867587070527047", "state": "Nuevo", "buy": 85.0, "sell": 160.0, "notes": ""}, {"id": 294, "name": "Samsung Galaxy M06 128GB+4GB Sage Green", "imei": "353290800432122", "state": "Nuevo", "buy": 98.0, "sell": 170.0, "notes": ""}, {"id": 295, "name": "ZTE A34 64GB 4GB", "imei": "865784063921012", "state": "Nuevo", "buy": 49.0, "sell": 115.0, "notes": ""}, {"id": 296, "name": "TECLAST T65 MAX TABLET 256GB", "imei": "867644045463814", "state": "Nuevo", "buy": 60.0, "sell": 130.0, "notes": ""}, {"id": 297, "name": "Apple iPhone 15 128GB Blue", "imei": "356660800727407", "state": "Semi Nuevo", "buy": 440.0, "sell": 580.0, "notes": ""}, {"id": 298, "name": "Samsung Galaxy A50 128GB+6GB White", "imei": "357964100748553", "state": "Nuevo", "buy": 120.0, "sell": 280.0, "notes": ""}, {"id": 299, "name": "Apple iPhone 12 128GB White", "imei": "351603788647671", "state": "Semi Nuevo", "buy": 265.0, "sell": 370.0, "notes": ""}, {"id": 300, "name": "Apple iPhone 12 mini 128GB Green", "imei": "353023116017901", "state": "Semi Nuevo", "buy": 220.0, "sell": 340.0, "notes": ""}, {"id": 301, "name": "AMAZUN FIRE HD10 KIDS PRO", "imei": "GN434J0243160ARA", "state": "Nuevo", "buy": 50.0, "sell": 140.0, "notes": ""}, {"id": 302, "name": "AMAZUN FIRE HD10 64GB", "imei": "GN434M02433300DK", "state": "Nuevo", "buy": 50.0, "sell": 140.0, "notes": ""}, {"id": 303, "name": "SAMSUNG M15 5G 128GB 4GB", "imei": "354773372503114", "state": "Nuevo", "buy": 120.0, "sell": 210.0, "notes": ""}, {"id": 304, "name": "Apple iPhone 14 Pro Max 256GB Deep Purple", "imei": "353427814033948", "state": "Usado", "buy": 740.0, "sell": 840.0, "notes": ""}, {"id": 305, "name": "Apple iPhone 15 Pro Max 256GB+8GB Black Titanium", "imei": "357370826303899", "state": "Usado", "buy": 900.0, "sell": 990.0, "notes": ""}, {"id": 306, "name": "Google Pixel 6a 128GB+6GB Charcoal", "imei": "356356800908200", "state": "Usado", "buy": 185.0, "sell": 320.0, "notes": ""}, {"id": 307, "name": "Samsung Galaxy A42 5G 128GB+6GB Prism Dot Black", "imei": "351269931840819", "state": "Usado", "buy": 100.0, "sell": 190.0, "notes": ""}, {"id": 308, "name": "Apple iPhone 11 64GB Black", "imei": "354039665062147", "state": "Usado", "buy": 210.0, "sell": 290.0, "notes": ""}, {"id": 309, "name": "Apple iPhone X 64GB Silver", "imei": "353043090224836", "state": "Usado", "buy": 145.0, "sell": 220.0, "notes": ""}, {"id": 310, "name": "Xiaomi Redmi 13C 128GB+6GB Midnight Black", "imei": "868673072758704", "state": "Nuevo", "buy": 90.0, "sell": 180.0, "notes": ""}, {"id": 311, "name": "Apple iPad Pro 12.9 2nd Gen A1671 64GB Silver", "imei": "55808080010041", "state": "Usado", "buy": 255.0, "sell": 369.0, "notes": ""}, {"id": 312, "name": "Apple iPhone SE (2020) 128GB Black", "imei": "352235583645631", "state": "Usado", "buy": 120.0, "sell": 200.0, "notes": ""}, {"id": 313, "name": "APPLE IPAD 5TH GEN A1823 9.7 128GB SILVER", "imei": "355804082322286", "state": "Usado", "buy": 120.0, "sell": 220.0, "notes": ""}, {"id": 314, "name": "APPLE IPAD 5TH GEN A1823 9.7 128GB SILVER", "imei": "355804082278025", "state": "Usado", "buy": 120.0, "sell": 220.0, "notes": ""}, {"id": 315, "name": "Apple iPad Air 2nd Gen A1567 9.7 64GB Space Grey", "imei": "356969063261347", "state": "Usado", "buy": 100.0, "sell": 210.0, "notes": ""}, {"id": 316, "name": "Apple iPhone 12 Pro Max 256GB Silver", "imei": "357104917676644", "state": "Usado", "buy": 470.0, "sell": 560.0, "notes": ""}, {"id": 317, "name": "Apple iPhone SE (2020) 64GB Black", "imei": "358397341031290", "state": "Usado", "buy": 100.0, "sell": 180.0, "notes": ""}, {"id": 318, "name": "Honor 7X 128GB+4GB Black", "imei": "866369033185440", "state": "Usado", "buy": 60.0, "sell": 129.0, "notes": ""}, {"id": 319, "name": "Apple iPhone SE (2020) 128GB Black", "imei": "352235583525007", "state": "Usado", "buy": 130.0, "sell": 210.0, "notes": ""}, {"id": 320, "name": "Samsung Galaxy A15 5G 128GB+4GB Personality Yellow", "imei": "350287316903409", "state": "Nuevo", "buy": 100.0, "sell": 190.0, "notes": ""}, {"id": 321, "name": "SAMSUNG A15 128GB 4GB LIGHT BLUE", "imei": "352060482678859", "state": "Nuevo", "buy": 100.0, "sell": 220.0, "notes": ""}, {"id": 322, "name": "Apple iPhone 14 Pro 128GB Deep Purple", "imei": "354542501461589", "state": "Usado", "buy": 650.0, "sell": 740.0, "notes": ""}, {"id": 323, "name": "Apple iPhone 8 64GB Space Gray", "imei": "354892091274433", "state": "Usado", "buy": 100.0, "sell": 170.0, "notes": ""}, {"id": 324, "name": "realme watch 2 RMW2008", "imei": "6941399046801", "state": "Nuevo", "buy": 30.0, "sell": 99.0, "notes": ""}, {"id": 325, "name": "Oppo A57s 128GB+4GB Sky Blue", "imei": "861995064681231", "state": "Nuevo", "buy": 115.0, "sell": 190.0, "notes": ""}, {"id": 326, "name": "Apple iPhone 12 Pro 256GB Gold", "imei": "356695119222914", "state": "Damaged", "buy": 450.0, "sell": 560.0, "notes": ""}, {"id": 327, "name": "ZAMKO Z6 PRO 32GB 3GB", "imei": "869352052097167", "state": "Nuevo", "buy": 65.0, "sell": 120.0, "notes": ""}, {"id": 328, "name": "ZAMKO Z6 PRO 32GB 3GB", "imei": "869352052096456", "state": "Nuevo", "buy": 65.0, "sell": 120.0, "notes": ""}, {"id": 329, "name": "ZAMKO Z6 PRO 32GB 3GB", "imei": "869352052099499", "state": "Nuevo", "buy": 65.0, "sell": 120.0, "notes": ""}, {"id": 330, "name": "Honor View 20 128GB+6GB Phantom Blue", "imei": "865244041667799", "state": "Nuevo", "buy": 165.0, "sell": 230.0, "notes": ""}, {"id": 331, "name": "Apple iPhone 11 128GB Black", "imei": "356868118310481", "state": "Usado", "buy": 320.0, "sell": 380.0, "notes": ""}, {"id": 332, "name": "Huawei P20 Pro 128GB+6GB Black", "imei": "862454049304278", "state": "Usado", "buy": 130.0, "sell": 190.0, "notes": ""}, {"id": 333, "name": "Apple iPhone 8 64GB Space Gray", "imei": "354896092931180", "state": "Usado", "buy": 110.0, "sell": 189.0, "notes": ""}];
+var DB = [];
+var LS_KEY = 'imei_db_v8';
+
+function load() {
+  try {
+    var saved = JSON.parse(localStorage.getItem(LS_KEY));
+    DB = (saved && saved.length > 0) ? saved : PRELOADED.map(function(p){ return Object.assign({},p); });
+    if (!saved || saved.length === 0) save();
+  } catch(e) { DB = PRELOADED.map(function(p){ return Object.assign({},p); }); }
+  updateBadge();
+}
+function save() { localStorage.setItem(LS_KEY, JSON.stringify(DB)); updateBadge(); }
+function updateBadge() {
+  var n = DB.length;
+  document.getElementById('badge').textContent = n + (n===1?' producto':' productos');
+  var c = document.getElementById('count'); if(c) c.textContent = n;
+}
+function goTab(name) {
+  var tabs = ['buscar','camara','admin'];
+  tabs.forEach(function(t,i){
+    document.querySelectorAll('.tab')[i].classList.toggle('active', t===name);
+    document.getElementById('panel-'+t).classList.toggle('active', t===name);
+  });
+  if(name !== 'camara') stopCam();
+  if(name === 'admin') renderList();
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function stateClass(s){ return 'state-'+s.replace(/\s+/g,''); }
+
+var EYE_OPEN = '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+var EYE_SHUT = '<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+function cardHTML(p) {
+  var buyFmt  = parseFloat(p.buy).toFixed(2);
+  var sellFmt = parseFloat(p.sell).toFixed(2);
+  return '<div class="result-card found">'
+    + '<div class="result-top">'
+    +   '<div><div class="result-name">' + esc(p.name) + '</div>'
+    +   '<div class="result-imei">' + esc(p.imei) + '</div></div>'
+    +   '<span class="state-chip ' + stateClass(p.state) + '">' + esc(p.state) + '</span>'
+    + '</div>'
+    + '<div class="prices-row">'
+    +   '<div class="price-box-sell">'
+    +     '<div class="price-box-label">Precio venta</div>'
+    +     '<div class="price-sell-val">€' + sellFmt + '</div>'
+    +   '</div>'
+    +   '<div class="price-box-buy">'
+    +     '<div class="price-box-label">Precio compra</div>'
+    +     '<div class="buy-row">'
+    +       '<div class="buy-display price-buy-hidden">€' + buyFmt + '</div>'
+    +       '<button class="eye-btn" onclick="toggleBuy(this)">' + EYE_SHUT + '</button>'
+    +     '</div>'
+    +   '</div>'
+    + '</div>'
+    + (p.notes ? '<div class="tags"><span class="tag">' + esc(p.notes) + '</span></div>' : '')
+    + '</div>';
+}
+
+function toggleBuy(btn) {
+  var display = btn.parentElement.querySelector('.buy-display');
+  var isHidden = display.classList.contains('price-buy-hidden');
+  if (isHidden) {
+    display.classList.remove('price-buy-hidden');
+    display.classList.add('price-buy-val');
+    btn.innerHTML = EYE_OPEN;
+  } else {
+    display.classList.remove('price-buy-val');
+    display.classList.add('price-buy-hidden');
+    btn.innerHTML = EYE_SHUT;
+  }
+}
+
+function doSearch() {
+  var q = document.getElementById('q').value.trim().toLowerCase();
+  var out = document.getElementById('search-out');
+  if(!q){ out.innerHTML=''; return; }
+  var res = DB.filter(function(p){
+    return p.name.toLowerCase().indexOf(q)>=0
+      || p.imei.toLowerCase().indexOf(q)>=0
+      || (p.notes||'').toLowerCase().indexOf(q)>=0
+      || (p.state||'').toLowerCase().indexOf(q)>=0;
+  });
+  if(!res.length){
+    out.innerHTML='<div class="result-card notfound"><div style="font-weight:700;color:var(--red);margin-bottom:4px">Sin resultados</div><div style="color:var(--text3);font-size:13px">No hay productos que coincidan.</div></div>';
+    return;
+  }
+  out.innerHTML = res.map(cardHTML).join('');
+}
+function clearSearch(){ document.getElementById('q').value=''; document.getElementById('search-out').innerHTML=''; }
+
+// CAMARA
+var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+var stream=null, scanInterval=null, barcodeDetector=null;
+
+window.addEventListener('DOMContentLoaded', function(){
+  if('BarcodeDetector' in window){
+    BarcodeDetector.getSupportedFormats().then(function(fmts){
+      var w=['code_128','ean_13','ean_8','code_39','qr_code','itf','upc_a','upc_e','code_93'];
+      barcodeDetector = new BarcodeDetector({formats: fmts.filter(function(f){ return w.indexOf(f)>=0; })});
+    }).catch(function(){});
+  }
+  if(isIOS){
+    document.getElementById('ios-wrap').style.display='block';
+    document.getElementById('btn-cam').style.display='none';
+    showInfo('iPhone detectado: pulsa el boton para fotografiar el codigo de barras.','');
+  }
+});
+
+async function toggleCam(){
+  if(stream){ stopCam(); return; }
+  var btn = document.getElementById('btn-cam');
+  btn.textContent='Conectando...'; btn.disabled=true;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    btn.textContent='Activar camara'; btn.disabled=false;
+    showInfo('Camara no disponible. Usa el boton Manual.','warn');
+    document.getElementById('manual-wrap').style.display='flex'; return;
+  }
+  try {
+    try { stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}}); }
+    catch(e){ stream=await navigator.mediaDevices.getUserMedia({video:true}); }
+    var video = document.getElementById('cam-video');
+    video.srcObject=stream; await video.play();
+    document.getElementById('video-container').classList.add('active');
+    document.getElementById('cam-placeholder').style.display='none';
+    document.getElementById('info-compat').style.display='none';
+    document.getElementById('dot').classList.add('on');
+    document.getElementById('cam-stat-txt').textContent='Activo';
+    btn.textContent='Detener camara'; btn.disabled=false;
+    if(barcodeDetector) startDetector(video);
+    else { showInfo('Camara activa. Escaner automatico no disponible. Usa Manual.','warn'); document.getElementById('manual-wrap').style.display='flex'; }
+  } catch(err){
+    btn.textContent='Activar camara'; btn.disabled=false;
+    var msg='No se pudo acceder a la camara.';
+    if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError') msg='Permiso denegado. Activalo en los ajustes del navegador.';
+    else if(err.name==='NotFoundError') msg='No se encontro ninguna camara.';
+    else if(err.name==='NotReadableError') msg='La camara esta en uso por otra app.';
+    showInfo(msg,'err');
+    document.getElementById('manual-wrap').style.display='flex';
+  }
+}
+function startDetector(video){
+  var lastCode='', lastTs=0;
+  scanInterval=setInterval(async function(){
+    if(!stream||video.readyState<2) return;
+    try {
+      var codes=await barcodeDetector.detect(video);
+      if(codes.length>0){
+        var code=codes[0].rawValue; var now=Date.now();
+        if(code&&(code!==lastCode||now-lastTs>3000)){
+          lastCode=code; lastTs=now;
+          if(navigator.vibrate) navigator.vibrate([60,40,60]);
+          handleCode(code);
+        }
+      }
+    } catch(e){}
+  }, 300);
+}
+function stopCam(){
+  if(scanInterval){ clearInterval(scanInterval); scanInterval=null; }
+  if(stream){ stream.getTracks().forEach(function(t){ t.stop(); }); stream=null; }
+  var v=document.getElementById('cam-video'); if(v) v.srcObject=null;
+  document.getElementById('video-container').classList.remove('active');
+  document.getElementById('cam-placeholder').style.display='block';
+  document.getElementById('dot').classList.remove('on');
+  document.getElementById('cam-stat-txt').textContent='Inactivo';
+  var btn=document.getElementById('btn-cam'); btn.textContent='Activar camara'; btn.disabled=false;
+}
+function showInfo(msg,type){
+  var el=document.getElementById('info-compat');
+  el.textContent=msg; el.className='info-box '+(type||''); el.style.display=msg?'block':'none';
+}
+async function handleIOSPhoto(input){
+  if(!input.files||!input.files[0]) return;
+  var img=new Image(); var url=URL.createObjectURL(input.files[0]);
+  img.onload=async function(){
+    URL.revokeObjectURL(url);
+    if('BarcodeDetector' in window&&barcodeDetector){
+      try{ var codes=await barcodeDetector.detect(img); if(codes.length>0){ handleCode(codes[0].rawValue); input.value=''; return; } }catch(e){}
+    }
+    showInfo('No se pudo leer el codigo. Escribe el IMEI manualmente.','warn');
+    document.getElementById('manual-wrap').style.display='flex';
+    document.getElementById('manual-imei').focus();
+    input.value='';
+  };
+  img.src=url;
+}
+function handleCode(code){
+  var out=document.getElementById('scanned-out'); out.style.display='block'; out.textContent='Codigo: '+code;
+  var norm=code.replace(/\s/g,'');
+  var res=DB.filter(function(p){ var pi=p.imei.replace(/\s/g,''); return pi===norm||pi.indexOf(norm)>=0||norm.indexOf(pi)>=0; });
+  var container=document.getElementById('cam-results');
+  if(res.length){ stopCam(); container.innerHTML=res.map(cardHTML).join(''); }
+  else {
+    container.innerHTML='<div class="result-card notfound">'
+      +'<div style="font-weight:700;color:var(--red);margin-bottom:4px">No encontrado</div>'
+      +'<div class="result-imei" style="margin-bottom:10px">'+esc(code)+'</div>'
+      +'<button class="btn ghost sm" onclick="prefillIMEI(this)" data-code="'+esc(code)+'">Anadir este producto</button>'
+      +'</div>';
+  }
+}
+function toggleManual(){
+  var w=document.getElementById('manual-wrap');
+  w.style.display=w.style.display==='none'?'flex':'none';
+  if(w.style.display==='flex') document.getElementById('manual-imei').focus();
+}
+function buscarManual(){ var v=document.getElementById('manual-imei').value.trim(); if(v) handleCode(v); }
+function prefillIMEI(btn){
+  var code=btn.getAttribute('data-code');
+  goTab('admin');
+  document.getElementById('f-imei').value=code;
+  document.getElementById('f-name').focus();
+  toast('IMEI cargado','ok');
+}
+
+// ADMIN
+function addProduct(){
+  var name=document.getElementById('f-name').value.trim();
+  var imei=document.getElementById('f-imei').value.trim();
+  var buy=document.getElementById('f-buy').value.trim();
+  var sell=document.getElementById('f-sell').value.trim();
+  var state=document.getElementById('f-state').value;
+  var notes=document.getElementById('f-notes').value.trim();
+  if(!name||!imei||!buy||!sell){ toast('Rellena nombre, IMEI y precios','err'); return; }
+  if(DB.find(function(p){ return p.imei===imei; })){ toast('Ya existe ese IMEI','err'); return; }
+  DB.push({id:Date.now(),type:'Mobile',name:name,imei:imei,buy:parseFloat(buy),sell:parseFloat(sell),state:state,notes:notes});
+  save(); renderList();
+  ['f-name','f-imei','f-buy','f-sell','f-notes'].forEach(function(id){ document.getElementById(id).value=''; });
+  toast('Producto anadido','ok');
+}
+function delProduct(id){
+  if(!confirm('Eliminar este producto?')) return;
+  DB=DB.filter(function(p){ return p.id!==id; }); save(); renderList(); toast('Eliminado','err');
+}
+function renderList(){
+  document.getElementById('count').textContent=DB.length;
+  var el=document.getElementById('prod-list');
+  if(!DB.length){
+    el.innerHTML='<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div><p>Sin productos.</p></div>';
+    return;
+  }
+  var reversed=[...DB].reverse();
+  el.innerHTML=reversed.map(function(p,i){
+    return '<div class="prod-item">'
+      +'<div class="prod-num">'+String(DB.length-i).padStart(2,'0')+'</div>'
+      +'<div class="prod-info"><div class="prod-name">'+esc(p.name)+'</div>'
+      +'<div class="prod-meta">'+esc(p.imei)+' &middot; '+esc(p.state)+'</div></div>'
+      +'<div class="prod-price">€'+p.sell.toFixed(0)+'</div>'
+      +'<button class="del-btn" onclick="delProduct('+p.id+')">'
+      +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>'
+      +'</button></div>';
+  }).join('');
+}
+function toast(msg,type){
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast '+(type||'')+' show';
+  setTimeout(function(){ el.classList.remove('show'); }, 2600);
+}
+load();
+renderList();
+</script>
+</body>
+</html>
